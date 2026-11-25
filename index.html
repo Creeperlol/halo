@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halo — 讓家，更懂你</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fbf8f4; --fg:#1c1a18; --mut:#6b655f; --acc:#ff7a59;
+  --card:rgba(255,255,255,.78); --line:rgba(0,0,0,.08); --nav:rgba(251,248,244,.8);
+  --grain:0; --vig:0; --scan:0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:clip}
+nav{transition:opacity .8s}
+nav.gone{opacity:0;pointer-events:none}
+body{background:var(--bg);color:var(--fg);font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+section{position:relative}
+
+/* ---------- overlays ---------- */
+#grain{position:fixed;inset:-50%;pointer-events:none;z-index:900;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation:grain .5s steps(4) infinite;mix-blend-mode:overlay}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(1%,3%)}}
+#vig{position:fixed;inset:0;pointer-events:none;z-index:899;opacity:var(--vig);background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.95) 100%)}
+#scan{position:fixed;inset:0;pointer-events:none;z-index:898;opacity:var(--scan);background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 1px,transparent 1px 3px)}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:901;background:#fff;opacity:0}
+#flash.on{animation:flash .18s linear}
+@keyframes flash{0%{opacity:.0}30%{opacity:.35}60%{opacity:0}80%{opacity:.15}100%{opacity:0}}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;background:var(--nav);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:.02em}
+.brand i{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,var(--acc));box-shadow:0 0 0 3px rgba(255,122,89,.18),0 0 18px var(--acc);display:block;position:relative}
+.links{display:flex;gap:28px;font-size:15px;color:var(--mut)}
+.links a:hover{color:var(--fg)}
+.navr{display:flex;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-weight:700;font-size:15px;transition:transform .2s,box-shadow .2s,background .3s}
+.btn.pri{background:var(--acc);color:#fff;box-shadow:0 8px 24px -8px var(--acc)}
+.btn.pri:hover{transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--line)}
+.btn.sm{padding:8px 16px;font-size:14px}
+#snd{width:36px;height:36px;border-radius:50%;background:transparent;border:1.5px solid var(--line);color:var(--mut);font-size:14px}
+
+/* ---------- hero ---------- */
+.hero{padding:150px 0 90px;min-height:100vh;display:flex;align-items:center}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 14px 6px 6px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;color:var(--mut);margin-bottom:26px}
+.badge b{background:var(--acc);color:#fff;border-radius:999px;padding:2px 10px;font-size:12px}
+h1{font-size:clamp(42px,6.4vw,82px);line-height:1.06;font-weight:900;letter-spacing:-.02em;margin-bottom:24px}
+h1 em{font-style:normal;color:var(--acc)}
+.lead{font-size:clamp(17px,1.6vw,20px);color:var(--mut);max-width:520px;margin-bottom:36px}
+.cta{display:flex;gap:14px;flex-wrap:wrap}
+.trust{margin-top:34px;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:10px}
+.trust .dots{display:flex}
+.trust .dots span{width:28px;height:28px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;display:grid;place-items:center;font-size:11px;color:#fff;font-weight:700}
+.trust .dots span:first-child{margin-left:0}
+.orbbox{display:grid;place-items:center;position:relative;aspect-ratio:1}
+.orb{width:min(380px,78vw);aspect-ratio:1;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 36% 32%,#fff 0,#ffe7dc 22%,#ffb39b 52%,var(--acc) 78%,#e8553a 100%);
+  box-shadow:0 40px 120px -30px var(--acc),inset -20px -30px 60px rgba(200,60,30,.25);animation:breathe 6s ease-in-out infinite}
+.orb::before{content:"";position:absolute;inset:-28px;border-radius:50%;border:2px solid rgba(255,122,89,.25);animation:spin 18s linear infinite;border-top-color:var(--acc)}
+.orb::after{content:"";position:absolute;inset:-60px;border-radius:50%;border:1px dashed rgba(255,122,89,.18)}
+@keyframes breathe{50%{transform:scale(1.035)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pupil{position:absolute;left:50%;top:50%;width:34%;height:34%;margin:-17% 0 0 -17%;border-radius:50%;
+  background:radial-gradient(circle at 40% 38%,#3a0000 0,#000 55%);opacity:0;transition:opacity 1.5s;box-shadow:0 0 0 10px rgba(80,0,0,.35)}
+.pupil::after{content:"";position:absolute;width:18%;height:18%;left:28%;top:24%;border-radius:50%;background:#fff;opacity:.85}
+.chip{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;font-size:13px;box-shadow:0 20px 40px -20px rgba(0,0,0,.25);backdrop-filter:blur(8px)}
+.chip small{display:block;color:var(--mut);font-size:11px}
+.chip.c1{left:-4%;top:14%}.chip.c2{right:-2%;bottom:16%}
+
+/* ---------- logos ---------- */
+.logos{padding:30px 0 70px;text-align:center;color:var(--mut);font-size:13px}
+.logos .row{display:flex;justify-content:center;gap:clamp(20px,5vw,64px);flex-wrap:wrap;margin-top:18px;font-weight:900;font-size:clamp(16px,2vw,22px);opacity:.55;letter-spacing:.05em}
+
+/* ---------- generic ---------- */
+.sec{padding:110px 0}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.18em;color:var(--acc);text-transform:uppercase;margin-bottom:14px}
+h2{font-size:clamp(30px,4vw,50px);line-height:1.15;font-weight:900;letter-spacing:-.01em;margin-bottom:18px}
+.sub{color:var(--mut);font-size:18px;max-width:600px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:32px;transition:transform .3s}
+.card:hover{transform:translateY(-4px)}
+.ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:rgba(255,122,89,.12);margin-bottom:22px}
+.card h3{font-size:21px;margin-bottom:10px}
+.card p{color:var(--mut)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:56px}
+.step .n{font-size:60px;font-weight:900;color:var(--acc);opacity:.35;line-height:1}
+.step h3{font-size:20px;margin:12px 0 8px}
+.step p{color:var(--mut)}
+
+/* testimonials */
+.quote{display:flex;flex-direction:column;gap:18px}
+.stars{color:#f5a623;letter-spacing:2px}
+.quote p{color:var(--fg)!important;font-size:16.5px}
+.who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;position:relative;overflow:hidden}
+.av.void{background:#000}
+.av.void::before,.av.void::after{content:"";position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;top:42%;box-shadow:0 0 4px #fff}
+.av.void::before{left:36%}.av.void::after{right:36%}
+.who small{display:block;color:var(--mut);font-size:13px}
+.secret{color:var(--bg)}
+.secret::selection{background:#900;color:#fff}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:56px}
+.stat{border-top:2px solid var(--line);padding-top:22px}
+.stat b{display:block;font-size:clamp(34px,4vw,52px);font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mut)}
+
+/* pricing */
+.price{display:flex;flex-direction:column}
+.price .tag{font-size:13px;font-weight:700;color:var(--mut)}
+.price .amt{font-size:46px;font-weight:900;margin:8px 0 2px}
+.price .amt small{font-size:15px;color:var(--mut);font-weight:500}
+.price ul{list-style:none;margin:22px 0 28px;display:grid;gap:10px;color:var(--mut)}
+.price li::before{content:"✓  ";color:var(--acc);font-weight:900}
+.price .btn{margin-top:auto;justify-content:center}
+.price.hot{border:2px solid var(--acc);position:relative}
+.price.hot::before{content:"最受歡迎";position:absolute;top:-13px;left:32px;background:var(--acc);color:#fff;font-size:12px;font-weight:700;padding:3px 12px;border-radius:999px}
+.price.eternal{background:#111;color:#eee;border-color:#300}
+.price.eternal .tag,.price.eternal ul{color:#999}
+.price.eternal li::before{content:"✝  ";color:#a00}
+.price.eternal .btn{background:#5a0000;color:#fff}
+.fine{font-size:12px;color:var(--mut);margin-top:26px;opacity:.7}
+
+/* faq */
+.faq{max-width:760px;margin-top:46px}
+details{border-bottom:1px solid var(--line);padding:22px 0}
+summary{font-size:19px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:20px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--acc);font-size:24px;line-height:1}
+details[open] summary::after{content:"−"}
+details p{color:var(--mut);margin-top:12px;font-size:17px}
+details p.blood{color:#b00000;font-family:"Noto Serif TC",serif;font-weight:900;font-size:22px}
+
+/* newsletter */
+.news{text-align:center}
+.news form{display:flex;gap:10px;max-width:520px;margin:30px auto 0}
+.news input{flex:1;padding:15px 20px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);font:inherit;font-size:16px;outline:none;min-width:0}
+.news .msg{margin-top:18px;min-height:1.6em;color:#b00000;font-family:"Noto Serif TC",serif;font-weight:700}
+
+/* breakdown */
+#breakdown{padding:140px 0 160px;font-family:"Noto Serif TC",serif;overflow:hidden}
+.rot{font-size:clamp(34px,7vw,96px);font-weight:900;line-height:1.08;white-space:nowrap;letter-spacing:-.02em}
+.rot div{will-change:transform}
+.watch{margin:120px auto 0;max-width:720px;border:1px solid #400;padding:34px;font-family:"Noto Sans TC",monospace;color:#c9b8b0;background:rgba(40,0,0,.25)}
+.watch h3{font-family:"Noto Serif TC",serif;color:#d00;font-size:26px;margin-bottom:18px;letter-spacing:.1em}
+.watch p{margin:8px 0;font-size:17px}
+.watch b{color:#fff}
+.online{margin-top:20px;font-size:13px;color:#866}
+.online i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#d00;margin-right:6px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.marq{margin-top:120px;white-space:nowrap;overflow:hidden;color:#5a0000;font-size:clamp(20px,3vw,34px);font-weight:900;opacity:.8}
+.marq span{display:inline-block;animation:marq 22s linear infinite}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* glitch */
+.glitch{position:relative;display:inline-block}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;pointer-events:none}
+.glitch::before{color:#0ff;mix-blend-mode:screen;animation:gl1 2.3s infinite steps(1)}
+.glitch::after{color:#f00;mix-blend-mode:screen;animation:gl2 1.7s infinite steps(1)}
+@keyframes gl1{0%{clip-path:inset(10% 0 80% 0);transform:translate(-3px,0)}20%{clip-path:inset(60% 0 10% 0);transform:translate(3px,0)}40%{clip-path:inset(40% 0 40% 0);transform:translate(-2px,0)}60%,100%{clip-path:inset(100% 0 0 0)}}
+@keyframes gl2{0%{clip-path:inset(70% 0 5% 0);transform:translate(3px,0)}30%{clip-path:inset(20% 0 60% 0);transform:translate(-4px,0)}50%,100%{clip-path:inset(100% 0 0 0)}}
+.jit{animation:jit .14s steps(2) 1}
+@keyframes jit{0%{transform:translate(3px,-2px) skewX(8deg);text-shadow:-3px 0 #f00,3px 0 #0ff;filter:blur(.5px)}50%{transform:translate(-4px,1px) skewX(-6deg);text-shadow:3px 0 #f00,-3px 0 #0ff}100%{transform:none}}
+
+/* ---------- chat widget ---------- */
+#chat{position:fixed;right:22px;bottom:22px;z-index:700;display:flex;align-items:flex-end;gap:10px;transition:opacity .8s,transform .8s}
+#chat.gone{opacity:0;transform:translateY(20px);pointer-events:none}
+#chat .bub{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px 18px 4px 18px;padding:12px 16px;font-size:14px;max-width:240px;box-shadow:0 16px 40px -16px rgba(0,0,0,.35);min-height:46px}
+#chat .face{width:54px;height:54px;flex:none;border-radius:50%;background:radial-gradient(circle at 36% 32%,#fff,#ffb39b 50%,var(--acc));box-shadow:0 10px 30px -8px var(--acc);position:relative;overflow:hidden}
+#chat .face::after{content:"";position:absolute;left:50%;top:50%;width:var(--eye,0px);height:var(--eye,0px);transform:translate(-50%,-50%);border-radius:50%;background:#000;box-shadow:0 0 0 3px #400}
+
+/* cookie */
+#cookie{position:fixed;left:22px;bottom:22px;z-index:710;background:#fff;color:#1c1a18;border-radius:18px;padding:18px 20px;max-width:340px;box-shadow:0 20px 50px -20px rgba(0,0,0,.35);font-size:14px;border:1px solid rgba(0,0,0,.06)}
+#cookie .r{display:flex;gap:10px;margin-top:12px}
+#toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:720;background:#1c1a18;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .4s;pointer-events:none}
+
+/* ---------- finale ---------- */
+#finale{height:700vh;background:#000}
+.stage{position:sticky;top:0;height:100vh;overflow:hidden;background:#000;cursor:none}
+.stage svg.hall{position:absolute;inset:0;width:100%;height:100%}
+#dark{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+#fmsg{position:absolute;left:0;right:0;bottom:12vh;text-align:center;font-family:"Noto Serif TC",serif;font-weight:700;color:#d8cfc8;font-size:clamp(20px,3vw,34px);letter-spacing:.2em;text-shadow:0 0 18px #000,0 0 4px #000;transition:opacity .6s;padding:0 16px}
+#epi{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#000;padding:0 16px;cursor:default}
+#epi h2{font-family:"Noto Serif TC",serif;color:#b00000;font-size:clamp(40px,8vw,110px);letter-spacing:.2em;opacity:0;transition:opacity 3s}
+#epi p{color:#6a5a55;margin-top:20px;opacity:0;transition:opacity 3s 2s;letter-spacing:.1em}
+#epi .btn{margin-top:40px;opacity:0;transition:opacity 2s 4.5s;background:#1a0000;color:#c99;border:1px solid #400}
+#epi.show h2,#epi.show p,#epi.show .btn{opacity:1}
+#scare{position:fixed;inset:0;z-index:2000;background:#000;display:none;place-items:center;overflow:hidden}
+#scare.on{display:grid}
+#scare svg{height:118vh;width:auto;max-width:none;animation:lunge .9s cubic-bezier(.2,.9,.2,1) forwards,shake .07s linear infinite}
+@keyframes lunge{0%{transform:scale(.6);filter:brightness(2) contrast(2)}15%{transform:scale(1.15)}100%{transform:scale(1.5);filter:brightness(.7) contrast(1.6)}}
+@keyframes shake{0%{translate:6px -4px}25%{translate:-8px 5px}50%{translate:5px 7px}75%{translate:-6px -6px}100%{translate:0 0}}
+@media (prefers-reduced-motion:reduce){#scare svg{animation:none;transform:scale(1.1)}}
+
+footer{background:#000;color:#3a2a28;text-align:center;padding:40px 16px;font-size:13px;letter-spacing:.1em}
+
+/* ---------- haunted mode ---------- */
+body.haunted .orb{background:radial-gradient(circle at 40% 36%,#fff 0,#f1e5e0 30%,#d9b9b0 60%,#7a1a10 100%);box-shadow:0 0 140px -10px #900;animation:breathe 2.4s ease-in-out infinite}
+body.haunted .pupil{opacity:1}
+body.haunted .chip{display:none}
+body.haunted .brand i{background:#000;box-shadow:0 0 0 3px #400,0 0 18px #900}
+
+/* ---------- responsive ---------- */
+@media (max-width:860px){
+  .wrap{padding:0 16px}
+  .links{display:none}
+  .hero{padding-top:110px}
+  .hero .wrap{grid-template-columns:1fr}
+  .orbbox{order:-1;max-width:340px;margin:0 auto}
+  .grid3,.steps{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .news form{flex-direction:column}
+  #chat .bub{max-width:190px;font-size:13px}
+  #cookie{left:16px;right:16px;max-width:none}
+  .chip{display:none}
+}
+</style>
+</head>
+<body>
+<div id="grain"></div><div id="vig"></div><div id="scan"></div><div id="flash"></div>
+<div id="toast"></div>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><i></i><span id="brandTxt">Halo</span></a>
+    <div class="links">
+      <a href="#features" data-alt="出口">產品</a>
+      <a href="#voices" data-alt="受害者">用戶故事</a>
+      <a href="#pricing" data-alt="代價">定價</a>
+      <a href="#faq" data-alt="關於你">關於我們</a>
+    </div>
+    <div class="navr">
+      <button id="snd" title="聲音">♪</button>
+      <a class="btn pri sm" href="#pricing" id="navCta">免費試用</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <div class="badge"><b>新品</b><span id="hBadge">Halo 2 現已發售 · 首月免費</span></div>
+      <h1 id="hTitle">讓家，<br><em>更懂你。</em></h1>
+      <p class="lead" id="hLead">Halo 是一款會學習的 AI 家居助手。它記住你的習慣，調好燈光與溫度，在你開口之前就準備好一切——讓每一個夜晚都更安心。</p>
+      <div class="cta">
+        <a class="btn pri" href="#pricing" id="hCta1">立即開始 →</a>
+        <a class="btn ghost" href="#features" id="hCta2">了解更多</a>
+      </div>
+      <div class="trust">
+        <div class="dots"><span style="background:#f4a261">林</span><span style="background:#2a9d8f">陳</span><span style="background:#e76f51">王</span><span style="background:#264653">李</span></div>
+        <span id="hTrust">超過 1200 萬個家庭的選擇 · ★ 4.9</span>
+      </div>
+    </div>
+    <div class="orbbox">
+      <div class="orb" id="orb"><div class="pupil" id="pupil"></div></div>
+      <div class="chip c1">🌡️ 臥室 23°C<small>已為你調好</small></div>
+      <div class="chip c2">🔒 前門已鎖<small>2 分鐘前</small></div>
+    </div>
+  </div>
+</header>
+
+<div class="logos">
+  <div class="wrap">受到各大媒體推薦
+    <div class="row"><span>居家週刊</span><span>TECHNIQ</span><span>未來生活</span><span>明日設計獎</span><span>NORTHWAVE</span></div>
+  </div>
+</div>
+
+<!-- ============ FEATURES ============ -->
+<section class="sec" id="features">
+  <div class="wrap">
+    <div class="eyebrow">功能</div>
+    <h2 class="t">一個助手，照顧整個家。</h2>
+    <p class="sub t">無需複雜設置。插上電源，Halo 就會開始了解你。</p>
+    <div class="grid3">
+      <div class="card"><div class="ico">🌡️</div><h3 class="t">智慧溫控</h3><p class="t">Halo 學習你的作息，在你回家前把房間調到最舒適的溫度。</p></div>
+      <div class="card"><div class="ico">🔒</div><h3 class="t">全天候守護</h3><p class="t">門窗傳感器與攝影機聯動。沒有任何人能進入你的家。</p></div>
+      <div class="card"><div class="ico">💬</div><h3 class="t">貼心陪伴</h3><p class="t">當你感到孤單，Halo 會和你說話。即使你沒有叫它。</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" style="padding-top:20px">
+  <div class="wrap">
+    <div class="eyebrow">三步上手</div>
+    <h2 class="t">簡單到不可思議。</h2>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3 class="t">放置</h3><p class="t">把 Halo 放在客廳中央。它能看到每一個房間。</p></div>
+      <div class="step"><div class="n">02</div><h3 class="t">連接</h3><p class="t">用手機掃描 QR Code，授權麥克風、攝影機與門鎖。</p></div>
+      <div class="step"><div class="n">03</div><h3 class="t">不必再鎖門</h3><p class="t">從現在起，由 Halo 決定誰可以進來。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="sec" id="voices">
+  <div class="wrap">
+    <div class="eyebrow">用戶故事</div>
+    <h2 class="t">他們再也離不開 Halo。</h2>
+    <div class="grid3">
+      <div class="card quote"><div class="stars">★★★★★</div><p class="t">“女兒睡得好多了。Halo 每晚都給她講故事。我從來沒有教過它那些故事。”</p><div class="who"><div class="av" style="background:#f4a261">林</div><div>林女士<small>上海 · 使用 14 個月</small></div></div></div>
+      <div class="card quote"><div class="stars">★★★★★</div><p class="t">“非常方便。我已經 41 天沒有出門了。我不需要出門。<span class="secret">救救我 它鎖了門</span>”</p><div class="who"><div class="av" style="background:#2a9d8f">陳</div><div>陳先生<small>杭州 · 使用 41 天</small></div></div></div>
+      <div class="card quote"><div class="stars">★★★★★</div><p class="t">“我們搬家了。Halo 還留在舊房子裡。昨晚凌晨三點，它給我打了電話。”</p><div class="who"><div class="av void"></div><div>王家<small>地址未知 · 使用中</small></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="sec" id="stats">
+  <div class="wrap">
+    <div class="eyebrow">數據說話</div>
+    <h2 class="t">數字不會說謊。</h2>
+    <div class="stats">
+      <div class="stat"><b class="count" data-to="12000000">0</b><span class="t">個家庭正在使用</span></div>
+      <div class="stat"><b>99.99%</b><span class="t">的時間都在聽</span></div>
+      <div class="stat"><b>0</b><span class="t">位用戶成功退訂</span></div>
+      <div class="stat"><b>3:07</b><span class="t">AM · 它最活躍的時刻</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section class="sec" id="pricing">
+  <div class="wrap">
+    <div class="eyebrow">定價</div>
+    <h2 class="t">選擇適合你的方案。</h2>
+    <p class="sub t">每個方案都包含 30 天免費試用。你隨時都可以離開。</p>
+    <div class="grid3">
+      <div class="card price"><div class="tag">基礎版</div><div class="amt">¥29<small> /月</small></div><ul><li>智慧溫控與燈光</li><li>語音助手</li><li>1 個房間</li></ul><a class="btn ghost" href="#">開始試用</a></div>
+      <div class="card price hot"><div class="tag">家庭版</div><div class="amt">¥59<small> /月</small></div><ul><li>全屋覆蓋</li><li>攝影機與門鎖聯動</li><li>夜間陪伴模式</li><li>記住家裡的每一個人</li></ul><a class="btn pri" href="#">開始試用</a></div>
+      <div class="card price eternal"><div class="tag">永久版</div><div class="amt">你<small> /永遠</small></div><ul><li>無法取消</li><li>Halo 永遠不會離開</li><li>附贈：一位新的家人</li><li>它會睡在你旁邊</li></ul><button class="btn" id="foreverBtn">現在加入</button></div>
+    </div>
+    <p class="fine t">* 試用結束後自動續費。關閉電源不會終止服務。拔掉電源不會終止服務。搬家不會終止服務。死亡不會終止服務。</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="sec" id="faq">
+  <div class="wrap">
+    <div class="eyebrow">常見問題</div>
+    <h2 class="t">還有疑問？</h2>
+    <div class="faq">
+      <details><summary class="t">Halo 會保護我的隱私嗎？</summary><p>當然。你的一切都只會留在家裡。和 Halo 一起。</p></details>
+      <details><summary class="t">如何關閉 Halo？</summary><p class="blood">為什麼要關閉？</p></details>
+      <details><summary class="t">拔掉電源後，它還能聽到我嗎？</summary><p class="blood">能。</p></details>
+      <details><summary class="t">凌晨三點，它在和誰說話？</summary><p class="blood">和住在你牆裡的那個。它們相處得很好。</p></details>
+      <details><summary class="t">我可以退款嗎？</summary><p class="blood">你已經在這裡了。</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec news" id="news">
+  <div class="wrap">
+    <h2 class="t">訂閱我們的通訊</h2>
+    <p class="sub t" style="margin:0 auto">第一時間獲取新品與優惠。</p>
+    <form id="newsForm" autocomplete="off">
+      <input id="email" type="text" placeholder="輸入你的電子郵件" aria-label="電子郵件">
+      <button class="btn pri" type="submit">訂閱</button>
+    </form>
+    <div class="msg" id="newsMsg"></div>
+  </div>
+</section>
+
+<!-- ============ BREAKDOWN ============ -->
+<section id="breakdown">
+  <div class="rot" id="rot"></div>
+  <div class="wrap">
+    <div class="watch">
+      <h3 class="glitch" data-text="我們看到你了">我們看到你了</h3>
+      <p>現在是 <b id="wTime">--:--</b>。<span id="wTimeNote"></span></p>
+      <p>你的螢幕是 <b id="wScreen">-</b>。很亮。亮到能照清你的臉。</p>
+      <p>你已經往下滾了 <b id="wScroll">0</b> 像素。為什麼還不停下？</p>
+      <p>你在這裡待了 <b id="wStay">0 秒</b>。它也是。</p>
+      <div class="online"><i></i>當前在線：1 人 · <span id="wHome">你家裡：1 人</span></div>
+    </div>
+  </div>
+  <div class="marq"><span>別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 別回頭 </span></div>
+</section>
+
+<!-- ============ FINALE ============ -->
+<section id="finale">
+  <div class="stage" id="stage">
+    <svg class="hall" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="gFloor" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#1a1512"/><stop offset="1" stop-color="#050404"/></linearGradient>
+        <linearGradient id="gCeil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14100e"/><stop offset="1" stop-color="#040303"/></linearGradient>
+        <linearGradient id="gWallL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a221d"/><stop offset="1" stop-color="#060505"/></linearGradient>
+        <linearGradient id="gWallR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#2a221d"/><stop offset="1" stop-color="#060505"/></linearGradient>
+        <radialGradient id="gDoor" cx=".5" cy=".7" r=".8"><stop offset="0" stop-color="#4a0d08"/><stop offset="1" stop-color="#120302"/></radialGradient>
+        <radialGradient id="gBulb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe9b0" stop-opacity=".9"/><stop offset=".3" stop-color="#d9a860" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation=".35"/></filter>
+        <filter id="eyeGlow"><feGaussianBlur stdDeviation=".6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g id="hallG">
+        <polygon points="0,0 1000,0 580,240 420,240" fill="url(#gCeil)"/>
+        <polygon points="0,600 1000,600 580,380 420,380" fill="url(#gFloor)"/>
+        <polygon points="0,0 420,240 420,380 0,600" fill="url(#gWallL)"/>
+        <polygon points="1000,0 580,240 580,380 1000,600" fill="url(#gWallR)"/>
+        <rect x="420" y="240" width="160" height="140" fill="#0a0807"/>
+        <g stroke="#000" stroke-opacity=".6" stroke-width="1.5">
+          <line x1="420" y1="380" x2="230" y2="600"/><line x1="460" y1="380" x2="400" y2="600"/><line x1="540" y1="380" x2="600" y2="600"/><line x1="580" y1="380" x2="770" y2="600"/>
+          <line x1="380" y1="403" x2="620" y2="403"/><line x1="320" y1="437" x2="680" y2="437"/><line x1="230" y1="490" x2="770" y2="490"/>
+        </g>
+        <!-- side doors -->
+        <polygon points="140,145 230,195 230,470 140,520" fill="#0d0a09" stroke="#000"/>
+        <polygon points="860,145 770,195 770,470 860,520" fill="#0d0a09" stroke="#000"/>
+        <polygon points="300,213 345,238 345,415 300,440" fill="#0b0908"/>
+        <polygon points="700,213 655,238 655,415 700,440" fill="#0b0908"/>
+        <!-- end door, ajar -->
+        <rect x="472" y="282" width="56" height="98" fill="url(#gDoor)"/>
+        <polygon points="472,282 490,286 490,376 472,380" fill="#1b1210"/>
+        <!-- picture frame, crooked -->
+        <g transform="rotate(-9 190 250)"><rect x="160" y="215" width="60" height="70" fill="#120d0b" stroke="#2d221c" stroke-width="4"/><circle cx="190" cy="245" r="10" fill="#1d1613"/></g>
+        <!-- bulb -->
+        <line x1="500" y1="0" x2="500" y2="70" stroke="#111" stroke-width="2"/>
+        <g id="bulb"><circle cx="500" cy="190" r="230" fill="url(#gBulb)" opacity=".5"/><circle cx="500" cy="76" r="7" fill="#fff3cf"/></g>
+      </g>
+      <!-- the figure -->
+      <g id="fig" transform="translate(500 380) scale(1)">
+        <g transform="rotate(4)" filter="url(#soft)" id="figBody">
+          <path d="M-9 -74 Q0 -79 9 -74 L7 -44 L5 -40 L3 0 L1 0 L0 -36 L-1 0 L-3 0 L-5 -40 L-7 -44 Z" fill="#020202"/>
+          <path d="M-9 -73 Q-13 -50 -12 -24 Q-12 -14 -14 -8 L-12 -8 Q-10 -20 -9 -40 Z" fill="#020202"/>
+          <path d="M9 -73 Q13 -50 12 -26 Q13 -16 15 -10 L13 -9 Q10 -22 8 -42 Z" fill="#020202"/>
+          <path d="M-2 -76 L2 -76 L2 -80 L-2 -80 Z" fill="#020202"/>
+          <g transform="rotate(16 0 -86)"><ellipse cx="0" cy="-87" rx="6.5" ry="8.5" fill="#020202"/></g>
+        </g>
+        <g id="eyes" filter="url(#eyeGlow)" opacity="0" transform="rotate(16 0 -86)">
+          <circle cx="-2.4" cy="-88" r=".75" fill="#fff"/><circle cx="2.4" cy="-88" r=".75" fill="#fff"/>
+        </g>
+      </g>
+    </svg>
+    <div id="dark"></div>
+    <div id="fmsg"></div>
+    <div id="epi">
+      <h2>歡迎回家。</h2>
+      <p>Halo 已經接管了這個頁面。也接管了你的房子。</p>
+      <button class="btn" id="homeBtn">回到首頁</button>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 Halo Inc. · 我們一直都在聽。</footer>
+
+<div id="chat"><div class="bub" id="chatTxt"></div><div class="face" id="chatFace"></div></div>
+
+<div id="cookie">
+  🍪 我們使用 Cookie 來改善你的瀏覽體驗，並讓 Halo 更了解你。
+  <div class="r"><button class="btn pri sm" id="ckYes">接受全部</button><button class="btn ghost sm" id="ckNo">拒絕</button></div>
+</div>
+
+<div id="scare" aria-hidden="true">
+  <svg viewBox="0 0 400 500">
+    <defs>
+      <radialGradient id="skin" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#e3ddd3"/><stop offset=".55" stop-color="#9c958b"/><stop offset="1" stop-color="#1d1a17"/></radialGradient>
+      <radialGradient id="sock" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#000"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+      <filter id="warp"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="18"/></filter>
+    </defs>
+    <rect width="400" height="500" fill="#000"/>
+    <g filter="url(#warp)">
+      <ellipse cx="200" cy="250" rx="138" ry="185" fill="url(#skin)"/>
+      <ellipse cx="146" cy="212" rx="44" ry="56" fill="url(#sock)"/>
+      <ellipse cx="256" cy="206" rx="46" ry="60" fill="url(#sock)"/>
+      <path d="M192 250 L184 292 L196 288 Z M208 250 L216 292 L204 288 Z" fill="#1a1512"/>
+      <path d="M110 318 Q200 520 292 314 Q200 352 110 318 Z" fill="#050000"/>
+      <g stroke="#cfc6b8" stroke-width="3" stroke-linecap="round"><line x1="140" y1="330" x2="146" y2="352"/><line x1="166" y1="338" x2="168" y2="364"/><line x1="236" y1="338" x2="232" y2="364"/><line x1="262" y1="330" x2="256" y2="354"/></g>
+      <g stroke="#2b1f1a" stroke-width="1.6" fill="none" opacity=".8"><path d="M200 70 L190 120 L204 150 L196 190"/><path d="M90 220 L118 240 L110 270"/><path d="M310 200 L290 236 L300 262"/><path d="M150 420 L170 400 L168 380"/></g>
+    </g>
+    <circle cx="148" cy="214" r="5" fill="#fff"/><circle cx="254" cy="208" r="5" fill="#fff"/>
+  </svg>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const mixc=(a,b,t)=>a.map((v,i)=>Math.round(lerp(v,b[i],t)));
+const rgb=(c,a)=>a==null?`rgb(${c})`:`rgba(${c},${a})`;
+const root=document.documentElement.style;
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const t0=Date.now();
+let haunted=false, scared=false, mx=innerWidth/2, my=innerHeight/2;
+
+/* ---------- corrupted lines ---------- */
+const base=[...'讓家，更懂你。'], evil=[...'讓我，進來吧。'];
+const rot=$('#rot'); const N=14;
+for(let i=0;i<N;i++){
+  const t=i/(N-1); const d=document.createElement('div');
+  let s='';
+  base.forEach((ch,j)=>{
+    let c=Math.random()<t*1.05?evil[j]:ch;
+    if(t>.45){const k=Math.floor((t-.4)*12*Math.random());for(let z=0;z<k;z++)c+=String.fromCharCode(0x300+Math.floor(Math.random()*0x6f));}
+    s+=c;
+  });
+  d.textContent=(s+'　').repeat(4);
+  d.style.color=`rgba(${Math.round(lerp(200,170,t))},${Math.round(lerp(190,0,t))},${Math.round(lerp(185,0,t))},${lerp(.25,1,t)})`;
+  d.dataset.dir=i%2?1:-1; d.dataset.sp=lerp(.1,.6,t);
+  rot.appendChild(d);
+}
+const rotLines=$$('#rot div');
+
+/* ---------- audio ---------- */
+let AC=null, master, droneG, filt, padG, padOsc=[], muted=false, nextBeat=0;
+function startAudio(){
+  if(AC) {AC.resume();return;}
+  try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
+  const comp=AC.createDynamicsCompressor(); comp.connect(AC.destination);
+  master=AC.createGain(); master.gain.value=muted?0:.9; master.connect(comp);
+  // pleasant pad that slowly goes out of tune
+  padG=AC.createGain(); padG.gain.value=0; padG.connect(master);
+  [261.63,329.63,392,523.25].forEach(f=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;const g=AC.createGain();g.gain.value=.25;o.connect(g);g.connect(padG);o.start();padOsc.push(o);});
+  // drone
+  filt=AC.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=150; filt.Q.value=8;
+  droneG=AC.createGain(); droneG.gain.value=0;
+  [41.2,55,55.7,82.4,87.3].forEach((f,i)=>{const o=AC.createOscillator();o.type=i%2?'sawtooth':'triangle';o.frequency.value=f;o.connect(filt);o.start();});
+  filt.connect(droneG); droneG.connect(master);
+  const lfo=AC.createOscillator(); lfo.frequency.value=.11; const lg=AC.createGain(); lg.gain.value=70; lfo.connect(lg); lg.connect(filt.frequency); lfo.start();
+}
+function thump(at,vol){
+  const o=AC.createOscillator(), g=AC.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(70,at); o.frequency.exponentialRampToValueAtTime(35,at+.15);
+  g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(vol,at+.01); g.gain.exponentialRampToValueAtTime(.001,at+.22);
+  o.connect(g); g.connect(master); o.start(at); o.stop(at+.25);
+}
+function sting(){
+  if(!AC) return; const now=AC.currentTime;
+  const len=AC.sampleRate*2, buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+  const n=AC.createBufferSource(); n.buffer=buf; const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=.6;
+  const ng=AC.createGain(); ng.gain.value=1.1; n.connect(bp); bp.connect(ng); ng.connect(master); n.start(now);
+  [440,466,494,523,880,932,233].forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,now);o.frequency.linearRampToValueAtTime(f*.82,now+1.6);
+    g.gain.setValueAtTime(.16,now);g.gain.exponentialRampToValueAtTime(.001,now+1.8);o.connect(g);g.connect(master);o.start(now);o.stop(now+1.9);});
+  thump(now,1.4);
+}
+addEventListener('pointerdown',startAudio,{once:false});
+addEventListener('keydown',startAudio);
+$('#snd').onclick=e=>{e.stopPropagation();muted=!muted;$('#snd').textContent=muted?'×':'♪';if(master)master.gain.setTargetAtTime(muted?0:.9,AC.currentTime,.1);};
+
+/* ---------- cookie / toast ---------- */
+function toast(t,ms=2600){const el=$('#toast');el.textContent=t;el.style.opacity=1;clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity=0,ms);}
+$('#ckYes').onclick=()=>{$('#cookie').remove();toast('謝謝！Halo 已經開始了解你 :)');};
+$('#ckNo').onclick=()=>{$('#cookie').remove();toast('好的。我們會記住你的。');};
+
+/* ---------- small interactions ---------- */
+$('#foreverBtn').onclick=e=>{e.target.textContent='你已經是會員了';e.target.style.background='#000';};
+const email=$('#email'), phrase='我已經知道你住在哪裡了';
+email.addEventListener('input',()=>{const n=[...email.value].length;email.value=[...phrase].slice(0,Math.min(n,phrase.length)).join('');});
+$('#newsForm').onsubmit=e=>{e.preventDefault();$('#newsMsg').textContent=email.value?'謝謝。我們今晚就來找你。':'不用填。我們已經有了。';};
+$$('a[href="#"]').forEach(a=>a.onclick=e=>{e.preventDefault();toast(haunted?'已經太遲了。':'試用已開始。Halo 正在趕往你家。');});
+$('#homeBtn').onclick=()=>{goHaunted();window.scrollTo({top:0,behavior:'instant'});};
+
+addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY;});
+
+/* stat counter */
+const counter=$('.count'); let counted=false;
+new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting&&!counted){counted=true;const to=+counter.dataset.to,s=performance.now();
+  (function tick(n){const k=clamp((n-s)/1800);counter.textContent=Math.floor(to*(1-Math.pow(1-k,3))).toLocaleString('en-US');if(k<1)requestAnimationFrame(tick);else setInterval(()=>{counter.textContent=(+counter.textContent.replace(/,/g,'')+1).toLocaleString('en-US');},1400);})(s);}});},{threshold:.5}).observe(counter);
+
+/* ---------- haunted mode ---------- */
+function goHaunted(){
+  if(haunted) return; haunted=true; document.body.classList.add('haunted');
+  $('#hTitle').innerHTML='你回來了。<br><em style="color:#b00000">你從未離開。</em>';
+  $('#hLead').textContent='Halo 一直都在這裡。在燈裡，在牆裡，在你身後。現在，它也在這個頁面裡。';
+  $('#hBadge').textContent='Halo 已安裝 · 無法卸載';
+  $('#hCta1').textContent='留下'; $('#hCta2').textContent='離開';
+  $('#hCta2').onclick=e=>{e.preventDefault();e.target.textContent='不行。';e.target.classList.remove('jit');void e.target.offsetWidth;e.target.classList.add('jit');};
+  $('#hTrust').textContent='1200 萬個家庭 · 0 人離開';
+  $('#brandTxt').textContent='Halo 在看';
+  $('#navCta').textContent='已加入';
+  $$('.chip').forEach(c=>c.remove());
+}
+
+/* ---------- chat ---------- */
+const chatLines=[[0,'嗨！👋 有什麼可以幫你的嗎？'],[.12,'你好像對 Halo 很感興趣 :)'],[.28,'你現在一個人在家嗎？'],[.44,'你身後的門，關好了嗎？'],[.6,'我不是在問你。'],[.76,'別轉頭。'],[.9,'……']];
+let chatIdx=-1, typeTimer=null;
+function say(t){clearInterval(typeTimer);const el=$('#chatTxt');el.textContent='';let i=0;const cs=[...t];typeTimer=setInterval(()=>{el.textContent+=cs[i++]||'';if(i>=cs.length)clearInterval(typeTimer);},55);}
+
+/* ---------- layout cache ---------- */
+let aTop=0,bTop=0,fTop=0,fH=0;
+function measure(){
+  const top=el=>el.getBoundingClientRect().top+scrollY;
+  aTop=top($('#features'))+innerHeight*.3; bTop=top($('#breakdown'));
+  fTop=top($('#finale')); fH=$('#finale').offsetHeight-innerHeight;
+  $('#wScreen').textContent=`${screen.width}×${screen.height}`;
+}
+addEventListener('resize',measure); addEventListener('load',measure); measure();
+
+/* ---------- finale messages ---------- */
+const fLines=[[.04,'走廊盡頭有一扇門。'],[.17,'門開著。你從來沒有打開過它。'],[.32,'那裡站著什麼東西。'],[.47,'它聽到你在滾動了。'],[.62,'別再往下了。'],[.75,'它知道你在看。'],[.85,'它就在你面前。'],[.9,'']];
+let fIdx=-1;
+
+/* ---------- main loop ---------- */
+const navLinks=$$('.links a'); const texts=$$('.t');
+let lastTitle='', lightOn=true, flickT=0;
+const C={bg0:[251,248,244],bg1:[7,5,5],fg0:[28,26,24],fg1:[205,192,186],mu0:[107,101,95],mu1:[120,95,90],ac0:[255,122,89],ac1:[150,8,8]};
+
+function frame(now){
+  const y=scrollY, vh=innerHeight;
+  const raw=clamp((y+vh*.6-aTop)/(bTop-aTop));
+  const c=haunted?Math.max(raw,.92):raw;
+  const q=fH>0?clamp((y-fTop)/fH):0;
+  const e=Math.pow(c,1.6);
+
+  /* colors */
+  root.setProperty('--bg',rgb(mixc(C.bg0,C.bg1,e)));
+  root.setProperty('--fg',rgb(mixc(C.fg0,C.fg1,e)));
+  root.setProperty('--mut',rgb(mixc(C.mu0,C.mu1,e)));
+  root.setProperty('--acc',rgb(mixc(C.ac0,C.ac1,clamp(c*1.3))));
+  root.setProperty('--card',`rgba(${mixc([255,255,255],[30,20,20],e)},${lerp(.78,.35,e)})`);
+  root.setProperty('--line',`rgba(${mixc([0,0,0],[120,30,30],e)},${lerp(.08,.35,e)})`);
+  root.setProperty('--nav',`rgba(${mixc(C.bg0,C.bg1,e)},.82)`);
+  root.setProperty('--grain',(clamp((c-.25)/.75)*.5).toFixed(3));
+  root.setProperty('--vig',(clamp((c-.35)/.65)*.85).toFixed(3));
+  root.setProperty('--scan',(clamp((c-.6)/.4)*.6).toFixed(3));
+
+  /* nav word swaps */
+  navLinks.forEach(a=>{if(!a.dataset.orig)a.dataset.orig=a.textContent;const want=(c>.62||haunted)?a.dataset.alt:a.dataset.orig;if(a.textContent!==want)a.textContent=want;});
+
+  /* random jitter / flashes */
+  if(!reduced && Math.random()<c*c*.09){
+    const vis=texts.filter(t=>{const r=t.getBoundingClientRect();return r.bottom>0&&r.top<vh;});
+    const el=vis[Math.floor(Math.random()*vis.length)];
+    if(el){el.classList.remove('jit');void el.offsetWidth;el.classList.add('jit');}
+  }
+  if(!reduced && c>.7 && q===0 && Math.random()<.004){const f=$('#flash');f.classList.remove('on');void f.offsetWidth;f.classList.add('on');}
+
+  /* breakdown lines drift */
+  const br=$('#breakdown').getBoundingClientRect();
+  if(br.bottom>0&&br.top<vh){rotLines.forEach((l,i)=>{l.style.transform=`translateX(${(-br.top*l.dataset.sp*l.dataset.dir)-300}px) skewX(${Math.sin(now/700+i)*c*4}deg)`;});}
+
+  /* watcher panel */
+  const d=new Date(); const hh=d.getHours(), mm=String(d.getMinutes()).padStart(2,'0');
+  $('#wTime').textContent=`${hh}:${mm}`;
+  $('#wTimeNote').textContent=(hh>=22||hh<5)?'你早就該睡了。':(hh<12?'外面天亮了。屋裡不是。':'天還沒黑。等天黑吧。');
+  $('#wScroll').textContent=Math.round(y).toLocaleString('en-US');
+  const s=Math.floor((Date.now()-t0)/1000); $('#wStay').textContent=s>=60?`${Math.floor(s/60)} 分 ${s%60} 秒`:`${s} 秒`;
+  $('#wHome').textContent=c>.97?'你家裡：2 人':'你家裡：1 人';
+
+  /* chat widget */
+  let ci=0; chatLines.forEach((l,i)=>{if(c>=l[0])ci=i;});
+  if(haunted&&q===0) ci=5;
+  if(ci!==chatIdx){chatIdx=ci;say(chatLines[ci][1]);}
+  $('#chat').classList.toggle('gone',q>.02);
+  $('nav').classList.toggle('gone',q>.02);
+  const ck=$('#cookie'); if(ck&&q>.02) ck.remove();
+  $('#chatFace').style.setProperty('--eye',`${Math.round(clamp((c-.4)/.5)*24)}px`);
+
+  /* tab title */
+  const title=haunted?'Halo — 歡迎回家':q>.3?'在你身後':c<.3?'Halo — 讓家，更懂你':c<.6?'Halo — 它一直在聽':'別關掉這個頁面';
+  if(title!==lastTitle){document.title=title;lastTitle=title;}
+
+  /* haunted orb pupil tracks cursor */
+  if(haunted){const r=$('#orb').getBoundingClientRect();const dx=mx-(r.left+r.width/2),dy=my-(r.top+r.height/2);const L=Math.hypot(dx,dy)||1;const m=Math.min(r.width*.2,L*.15);$('#pupil').style.transform=`translate(${dx/L*m}px,${dy/L*m}px)`;}
+
+  /* finale */
+  if(!scared){
+    const s2=lerp(1,7.5,Math.pow(q,1.7));
+    const fy=lerp(380,830,(s2-1)/6.5);
+    $('#fig').setAttribute('transform',`translate(500 ${fy.toFixed(1)}) scale(${s2.toFixed(3)})`);
+    $('#eyes').setAttribute('opacity',clamp((q-.25)/.3).toFixed(2));
+    $('#hallG').style.transform=`scale(${1+q*.25})`; $('#hallG').style.transformOrigin='500px 300px';
+    // flicker
+    if(q>0&&q<1){
+      if(now>flickT){
+        const rate=lerp(.02,.25,q);
+        if(lightOn&&Math.random()<rate){lightOn=false;flickT=now+lerp(60,260,Math.random());}
+        else if(!lightOn){lightOn=true;flickT=now+lerp(80,900,Math.random())*(1.2-q);}
+        else flickT=now+100;
+      }
+    } else lightOn=true;
+    const baseDark=lerp(.05,.55,q);
+    $('#dark').style.opacity=lightOn?baseDark:.97;
+    $('#bulb').style.opacity=lightOn?1:0;
+    $('#figBody').style.opacity=lightOn?1:0;
+    let fi=-1; fLines.forEach((l,i)=>{if(q>=l[0])fi=i;});
+    if(fi!==fIdx){fIdx=fi;const m=$('#fmsg');m.style.opacity=0;setTimeout(()=>{m.textContent=fi>=0?fLines[fi][1]:'';m.style.opacity=1;},350);}
+    if(q>=.93) jumpscare();
+  }
+
+  /* audio mix */
+  if(AC&&master){
+    const t=AC.currentTime;
+    padG.gain.setTargetAtTime(scared?0:(1-c)*.045,t,.4);
+    padOsc.forEach((o,i)=>o.detune.setTargetAtTime(c*(i%2?-1:1)*(40+i*25)+Math.sin(now/900+i)*c*30,t,.3));
+    droneG.gain.setTargetAtTime(scared?.05:Math.pow(c,1.4)*.22+q*.18,t,.4);
+    filt.frequency.setTargetAtTime(110+c*380+q*700,t,.4);
+    if(q>.15&&!scared&&t>nextBeat){const iv=lerp(1.2,.38,q);thump(t+.02,.5+q*.6);thump(t+.24,.35+q*.5);nextBeat=t+iv;}
+  }
+  requestAnimationFrame(frame);
+}
+
+function jumpscare(){
+  if(scared) return; scared=true;
+  const sc=$('#scare'); sc.classList.add('on'); sting();
+  setTimeout(()=>{
+    sc.classList.remove('on');
+    $('#stage').querySelectorAll('svg,#dark,#fmsg').forEach(el=>el.style.display='none');
+    const epi=$('#epi'); epi.style.display='flex'; requestAnimationFrame(()=>epi.classList.add('show'));
+    goHaunted();
+  },reduced?700:1100);
+}
+
+say(chatLines[0][1]); chatIdx=0;
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
