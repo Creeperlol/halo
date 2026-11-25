@@ -198,12 +198,32 @@ details p.blood{color:#b00000;font-family:"Noto Serif TC",serif;font-weight:900;
 #epi p{color:#6a5a55;margin-top:20px;opacity:0;transition:opacity 3s 2s;letter-spacing:.1em}
 #epi .btn{margin-top:40px;opacity:0;transition:opacity 2s 4.5s;background:#1a0000;color:#c99;border:1px solid #400}
 #epi.show h2,#epi.show p,#epi.show .btn{opacity:1}
-#scare{position:fixed;inset:0;z-index:2000;background:#000;display:none;place-items:center;overflow:hidden}
-#scare.on{display:grid}
-#scare svg{height:118vh;width:auto;max-width:none;animation:lunge .9s cubic-bezier(.2,.9,.2,1) forwards,shake .07s linear infinite}
-@keyframes lunge{0%{transform:scale(.6);filter:brightness(2) contrast(2)}15%{transform:scale(1.15)}100%{transform:scale(1.5);filter:brightness(.7) contrast(1.6)}}
-@keyframes shake{0%{translate:6px -4px}25%{translate:-8px 5px}50%{translate:5px 7px}75%{translate:-6px -6px}100%{translate:0 0}}
-@media (prefers-reduced-motion:reduce){#scare svg{animation:none;transform:scale(1.1)}}
+/* transition: darkness → eyes → the Halo orb → it was an eye all along */
+#trans{position:fixed;inset:0;z-index:2000;background:#000;display:none;place-items:center;overflow:hidden;cursor:none;transition:opacity 2.2s}
+#trans.on{display:grid}
+#trans.out{opacity:0}
+#trans>.teyes,#trans>.torb{grid-area:1/1}
+.teyes{display:flex;gap:46px;opacity:0;transition:opacity 1.8s,gap 1.4s cubic-bezier(.6,0,.3,1)}
+.teyes i{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 18px 4px rgba(255,255,255,.5)}
+#trans.s1 .teyes{opacity:1}
+#trans.s2 .teyes i{animation:tblink .4s ease-in-out 2}
+@keyframes tblink{50%{transform:scaleY(.08)}}
+#trans.s3 .teyes{gap:0}
+#trans.s4 .teyes{opacity:0;transition:opacity .8s}
+.torb{width:min(300px,62vw);aspect-ratio:1;border-radius:50%;position:relative;opacity:0;transform:scale(.02);
+  background:radial-gradient(circle at 36% 32%,#fff 0,#ffe7dc 22%,#ffb39b 52%,#ff7a59 78%,#e8553a 100%);
+  box-shadow:0 0 160px 20px rgba(255,122,89,.4);transition:transform 2.6s cubic-bezier(.2,.8,.2,1),opacity 1.6s,box-shadow 2.5s}
+.torb::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 40% 36%,#fff 0,#f1e5e0 30%,#d9b9b0 60%,#7a1a10 100%);opacity:0;transition:opacity 2.5s}
+#trans.s4 .torb{opacity:1;transform:scale(1);animation:breathe 4s ease-in-out infinite 2.6s}
+#trans.s5 .torb{box-shadow:0 0 200px 40px rgba(150,0,0,.55)}
+#trans.s5 .torb::after{opacity:1}
+.tpupil{position:absolute;left:50%;top:50%;width:0;height:0;border-radius:50%;z-index:1;transform:translate(-50%,-50%);
+  background:radial-gradient(circle at 40% 38%,#3a0000 0,#000 60%);transition:width 2s cubic-bezier(.7,0,.2,1),height 2s cubic-bezier(.7,0,.2,1)}
+.tpupil::after{content:"";position:absolute;width:18%;height:18%;left:28%;top:24%;border-radius:50%;background:#fff;opacity:.85}
+#trans.s5 .tpupil{width:38%;height:38%}
+.tline{position:absolute;left:0;right:0;bottom:13vh;text-align:center;padding:0 16px;font-family:"Noto Serif TC",serif;font-weight:700;color:#a8968f;font-size:clamp(18px,2.6vw,28px);letter-spacing:.3em;opacity:0;transition:opacity 1s}
+.tline.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#trans *{animation:none!important}}
 
 footer{background:#000;color:#3a2a28;text-align:center;padding:40px 16px;font-size:13px;letter-spacing:.1em}
 
@@ -594,25 +614,10 @@ body.haunted .orbit i{background:#f66;box-shadow:0 0 14px 4px #900}
   <div class="r"><button class="btn pri sm" id="ckYes">接受全部</button><button class="btn ghost sm" id="ckNo">拒絕</button></div>
 </div>
 
-<div id="scare" aria-hidden="true">
-  <svg viewBox="0 0 400 500">
-    <defs>
-      <radialGradient id="skin" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#e3ddd3"/><stop offset=".55" stop-color="#9c958b"/><stop offset="1" stop-color="#1d1a17"/></radialGradient>
-      <radialGradient id="sock" cx=".5" cy=".5" r=".5"><stop offset=".55" stop-color="#000"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
-      <filter id="warp"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="18"/></filter>
-    </defs>
-    <rect width="400" height="500" fill="#000"/>
-    <g filter="url(#warp)">
-      <ellipse cx="200" cy="250" rx="138" ry="185" fill="url(#skin)"/>
-      <ellipse cx="146" cy="212" rx="44" ry="56" fill="url(#sock)"/>
-      <ellipse cx="256" cy="206" rx="46" ry="60" fill="url(#sock)"/>
-      <path d="M192 250 L184 292 L196 288 Z M208 250 L216 292 L204 288 Z" fill="#1a1512"/>
-      <path d="M110 318 Q200 520 292 314 Q200 352 110 318 Z" fill="#050000"/>
-      <g stroke="#cfc6b8" stroke-width="3" stroke-linecap="round"><line x1="140" y1="330" x2="146" y2="352"/><line x1="166" y1="338" x2="168" y2="364"/><line x1="236" y1="338" x2="232" y2="364"/><line x1="262" y1="330" x2="256" y2="354"/></g>
-      <g stroke="#2b1f1a" stroke-width="1.6" fill="none" opacity=".8"><path d="M200 70 L190 120 L204 150 L196 190"/><path d="M90 220 L118 240 L110 270"/><path d="M310 200 L290 236 L300 262"/><path d="M150 420 L170 400 L168 380"/></g>
-    </g>
-    <circle cx="148" cy="214" r="5" fill="#fff"/><circle cx="254" cy="208" r="5" fill="#fff"/>
-  </svg>
+<div id="trans" aria-hidden="true">
+  <div class="teyes"><i></i><i></i></div>
+  <div class="torb"><div class="tpupil"></div></div>
+  <p class="tline" id="tline"></p>
 </div>
 
 <script>
@@ -687,15 +692,19 @@ function thump(at,vol){
   g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(vol,at+.01); g.gain.exponentialRampToValueAtTime(.001,at+.22);
   o.connect(g); g.connect(master); o.start(at); o.stop(at+.25);
 }
-function sting(){
-  if(!AC) return; const now=AC.currentTime;
-  const len=AC.sampleRate*2, buf=AC.createBuffer(1,len,AC.sampleRate), d=buf.getChannelData(0);
-  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
-  const n=AC.createBufferSource(); n.buffer=buf; const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=.6;
-  const ng=AC.createGain(); ng.gain.value=1.1; n.connect(bp); bp.connect(ng); ng.connect(master); n.start(now);
-  [440,466,494,523,880,932,233].forEach(f=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sawtooth';o.frequency.setValueAtTime(f,now);o.frequency.linearRampToValueAtTime(f*.82,now+1.6);
-    g.gain.setValueAtTime(.16,now);g.gain.exponentialRampToValueAtTime(.001,now+1.8);o.connect(g);g.connect(master);o.start(now);o.stop(now+1.9);});
-  thump(now,1.4);
+// a single soft, slightly-wrong music-box note that rings out in the dark
+function chime(f,vol=.12){
+  if(!AC) return; const at=AC.currentTime+.02;
+  const g=AC.createGain(); g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(vol,at+.01); g.gain.exponentialRampToValueAtTime(.0005,at+5);
+  g.connect(master); g.connect(rev);
+  [[1,1],[2,.2],[2.76,.06]].forEach(([m,a])=>{const o=AC.createOscillator(),og=AC.createGain();o.type='sine';o.frequency.value=f*m;o.detune.value=-28;og.gain.value=a;o.connect(og);og.connect(g);o.start(at);o.stop(at+5.1);});
+}
+// slow low swell under the eye opening
+function swell(){
+  if(!AC) return; const at=AC.currentTime;
+  const g=AC.createGain(); g.gain.setValueAtTime(0,at); g.gain.linearRampToValueAtTime(.22,at+2.4); g.gain.linearRampToValueAtTime(0,at+6);
+  g.connect(master); g.connect(rev);
+  [49,49.6,73.4].forEach(f=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;o.connect(g);o.start(at);o.stop(at+6.1);});
 }
 addEventListener('pointerdown',startAudio,{once:false});
 addEventListener('keydown',startAudio);
@@ -890,7 +899,7 @@ function frame(now){
           pluck(f,nextNote,.09,wr); if(Math.random()<.18)pluck(f/2,nextNote,.05,wr);}
         nextNote+=(Math.random()<.25?.76:.38)*slow;}
     }
-    droneG.gain.setTargetAtTime(scared?.05:Math.pow(clamp((c-.35)/.65),1.5)*.24+q*.18,t,.5);
+    droneG.gain.setTargetAtTime(scared?0:Math.pow(clamp((c-.35)/.65),1.5)*.24+q*.18,t,scared?.03:.5);
     filt.frequency.setTargetAtTime(110+c*380+q*700,t,.4);
     if(q>.15&&!scared&&t>nextBeat){const iv=lerp(1.2,.38,q);thump(t+.02,.5+q*.6);thump(t+.24,.35+q*.5);nextBeat=t+iv;}
   }
@@ -899,13 +908,23 @@ function frame(now){
 
 function jumpscare(){
   if(scared) return; scared=true;
-  const sc=$('#scare'); sc.classList.add('on'); sting();
-  setTimeout(()=>{
-    sc.classList.remove('on');
+  const tr=$('#trans'), tl=$('#tline'), k=reduced?.5:1;
+  const line=txt=>{tl.classList.remove('show');setTimeout(()=>{tl.textContent=txt;if(txt)tl.classList.add('show');},500);};
+  const at=(ms,fn)=>setTimeout(fn,ms*k);
+  // hard cut to black and sudden silence
+  tr.classList.add('on');
+  if(AC){droneG.gain.cancelScheduledValues(AC.currentTime);droneG.gain.setTargetAtTime(0,AC.currentTime,.02);}
+  at(1200,()=>{tr.classList.add('s1');line('噓。');});
+  at(3000,()=>tr.classList.add('s2'));
+  at(4200,()=>{tr.classList.add('s3');line('');});
+  at(5400,()=>{tr.classList.add('s4');chime(659.25);line('你一直以為，那是一盞燈。');});
+  at(8600,()=>{tr.classList.add('s5');swell();chime(622.25,.08);line('其實，那是它的眼睛。');});
+  at(12000,()=>{
     $('#stage').querySelectorAll('svg,#dark,#fmsg').forEach(el=>el.style.display='none');
     const epi=$('#epi'); epi.style.display='flex'; requestAnimationFrame(()=>epi.classList.add('show'));
-    goHaunted();
-  },reduced?700:1100);
+    goHaunted(); tr.classList.add('out');
+  });
+  at(14400,()=>tr.classList.remove('on'));
 }
 
 say(chatLines[0][1]); chatIdx=0;
